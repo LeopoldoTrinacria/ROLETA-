@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roleta Trinacria PRO</title>
+<style>
+:root {
+  --bg-dark:#071127; --bg-light:#fff;
+  --text-dark:#fff; --text-light:#072029;
+  --accent:#eab308; --muted:#9aa8bf;
+}
+body {
+  margin:0; padding:0;
+  font-family:Arial, sans-serif;
+  background:var(--bg-dark); color:var(--text-dark);
+  transition:all 0.4s;
+}
+.wrap { max-width:960px; margin:0 auto; padding:14px; }
+.card { background:rgba(255,255,255,0.02); border-radius:12px; padding:14px; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
+header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+header h1 { margin:0; font-size:20px; }
+header p { margin:0; font-size:13px; color:var(--muted); }
+.main { display:flex; gap:14px; flex-wrap:wrap; }
+.left { flex:1; min-width:300px; }
+.right { width:360px; min-width:260px; }
+.wheel-wrap { position:relative; background:rgba(255,255,255,0.02); border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:center; }
+canvas#wheel { width:100%; height:auto; border-radius:10px; }
+.pointer { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:0; height:0;
+  border-left:18px solid transparent; border-right:18px solid transparent;
+  border-bottom:28px solid rgba(255,255,255,0.95);
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+}
+form { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+input[type=text] {
+  flex:1; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
+  background:transparent; color:var(--text-dark); font-size:16px; min-width:110px;
+}
+button {
+  padding:12px 16px; border-radius:10px; border:none;
+  background:var(--accent); color:#072029; font-weight:800; font-size:16px;
+  min-height:48px; cursor:pointer;
+}
+#spinBtn[disabled]{ opacity:0.6; pointer-events:none; }
+.result { margin-top:12px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.02); min-height:64px; }
+.result .title { font-weight:800; font-size:16px; }
+.small { font-size:13px; color:var(--muted); }
+
+/* Histórico */
+.history-box {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  min-height: 320px;
+  display:flex; flex-direction:column;
+}
+.history-box h3 { margin:0 0 8px 0; font-size:16px; }
+.history { flex:1; margin-top:8px; overflow-y:auto; border-radius:8px; background:rgba(255,255,255,0.02); }
+.history table { width:100%; border-collapse:collapse; font-size:13px; }
+.history th, .history td { padding:6px 6px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.03); }
+.history td.highlight { font-weight:700; color:var(--accent); }
+.history::-webkit-scrollbar { width:6px; }
+.history::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:3px; }
+
+/* Print card */
+.print-card {
+  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:92%; max-width:420px; background:#fff; color:#072029;
+  border-radius:12px; padding:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6); z-index:9999; display:none;
+}
+.print-card h2 { margin:0 0 6px 0; font-size:18px; }
+.print-card p { margin:6px 0 0 0; }
+.close-print { background:transparent; border:none; font-weight:700; color:#999; position:absolute; right:10px; top:8px; }
+
+footer { margin-top:12px; color:var(--muted); font-size:13px; }
+
+@media (max-width:520px) {
+  .right { width:100%; }
+  .print-card { max-width:340px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <header>
+      <div>
+        <h1>Roleta Trinacria PRO</h1>
+        <p class="small">1 giro por semana • Histórico local • Ranking básico</p>
+      </div>
+    </header>
+    <div class="main">
+      <div class="left">
+        <div class="wheel-wrap" aria-hidden="true">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="520" height="520" aria-label="Roleta de prêmios"></canvas>
+        </div>
+        <form id="playerForm" onsubmit="return false">
+          <input id="firstName" type="text" placeholder="Nome" required />
+          <input id="lastName" type="text" placeholder="Sobrenome" required />
+          <button id="spinBtn" type="button">GIRAR</button>
+        </form>
+        <div class="result" id="resultBox">
+          <div id="message" class="title">Bem-vindo! Preencha seu nome e gire a roleta.</div>
+          <div id="submessage" class="small">Se ganhar, aparecerá um cartão imprimível.</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="history-box">
+          <h3>Histórico</h3>
+          <div class="small">Últimos giros salvos no dispositivo</div>
+          <div class="history" id="historyList">
+            <table id="historyTable" style="display:none">
+              <thead><tr><th>Nome</th><th>Prêmio</th><th>Data/Hora</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div id="historyPlaceholder" class="small" style="text-align:center; padding:20px;">
+              📜 Nenhum histórico ainda
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer><div class="small">Otimize cores, textos e prêmios conforme desejar.</div></footer>
+  </div>
+</div>
+
+<!-- Printable card -->
+<div class="print-card" id="printCard">
+  <button class="close-print" id="closePrint">✕</button>
+  <h2 id="printTitle">Parabéns!</h2>
+  <p id="printMessage" style="font-size:18px;font-weight:800;margin-top:8px"></p>
+  <p id="printSmall" style="margin-top:10px;font-size:13px;color:#444">Mostre este print para resgatar seu prêmio/desconto.</p>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button id="btnPrint" style="flex:1;padding:10px;border-radius:8px;border:none;background:#072029;color:#fff;font-weight:700">Imprimir / Salvar PDF</button>
+    <button id="btnClose" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#072029;font-weight:700">Fechar</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+/******** CONFIG ********/
+const SEGMENTS = [5,7,10,12,15,20,"Abridor","Misterioso"];
+const WEIGHTS  = [40,25,15,10,7,3,15,3];
+const COLORS   = ['#0ea5a4','#34d399','#60a5fa','#f97316','#f43f5e','#a78bfa','#facc15','#ff6f61'];
+const LOCAL_KEY = "trinacria_wheel_pro";
+const SPIN_COOLDOWN = 7*24*60*60*1000; // 7 dias
+
+/******** FUNÇÕES UTIL ********/
+function randomWeight(weights){
+  const total = weights.reduce((a,b)=>a+b,0);
+  let rand = Math.random()*total;
+  for(let i=0;i<weights.length;i++){ if(rand<weights[i]) return i; rand-=weights[i]; }
+  return weights.length-1;
+}
+function getPrizeMessage(prize, firstName){
+  if(prize==="Abridor") return `🎉 Parabéns, ${firstName}! Você ganhou um abridor exclusivo!`;
+  if(prize==="Misterioso") return `🎉 Parabéns, ${firstName}! Você ganhou um prêmio misterioso!`;
+  return `🎉 Parabéns, ${firstName}! Você ganhou ${prize}% de desconto!`;
+}
+
+/******** HISTÓRICO ********/
+function loadHistory(){
+  const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
+  const tbody = document.querySelector("#historyTable tbody");
+  const table = document.getElementById("historyTable");
+  const placeholder = document.getElementById("historyPlaceholder");
+  tbody.innerHTML="";
+  if(hist.length===0){
+    placeholder.style.display="block"; table.style.display="none";
+  } else {
+    placeholder.style.display="none"; table.style.display="table";
+    hist.slice(-20).reverse().forEach(e=>{
+      const tr=document.createElement("tr");
+      const prizeCell = `<td class="${(e.prize=="20"||e.prize=="Abridor")?"highlight":""}">${e.prize}</td>`;
+      tr.innerHTML = `<td>${e.firstName} ${e.lastName}</td>${prizeCell}<td>${new Date(e.date).toLocaleString([], {dateStyle:"short", timeStyle:"short"})}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+}
+function saveHistory(firstName,lastName,prize){
+  const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
+  hist.push({firstName,lastName,prize,date:Date.now()});
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(hist));
+  loadHistory();
+}
+
+/******** ROLETA ********/
+const canvas=document.getElementById("wheel"), ctx=canvas.getContext("2d");
+const spinBtn=document.getElementById("spinBtn"), messageEl=document.getElementById("message");
+let spinning=false, currentRotation=0, lastSpinTime=0;
+
+function drawWheel(rotation=0){
+  const w=canvas.width, h=canvas.height, cx=w/2, cy=h/2, seg=SEGMENTS.length, angle=2*Math.PI/seg;
+  ctx.clearRect(0,0,w,h); ctx.save(); ctx.translate(cx,cy); ctx.rotate(rotation);
+  for(let i=0;i<seg;i++){
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,w/2,i*angle,(i+1)*angle); ctx.closePath();
+    ctx.fillStyle=COLORS[i%COLORS.length]; ctx.fill();
+    ctx.save(); ctx.rotate((i+0.5)*angle); ctx.textAlign="right"; ctx.fillStyle="#021124"; ctx.font="bold 20px Arial";
+    ctx.fillText(SEGMENTS[i], w/2-20, 8); ctx.restore();
+  }
+  ctx.restore();
+}
+drawWheel();
+
+/******** ANIMAÇÃO DO GIRO ********/
+function spinWheel(firstName,lastName){
+  if(spinning) return;
+  const now=Date.now();
+  if(now-lastSpinTime<SPIN_COOLDOWN){ alert("⏳ Você só pode girar a cada 7 dias!"); return; }
+
+  const prizeIndex = randomWeight(WEIGHTS), prize=SEGMENTS[prizeIndex];
+  const segAngle=(2*Math.PI)/SEGMENTS.length;
+  const stopAngle=(SEGMENTS.length-prizeIndex)*segAngle-segAngle/2;
+  const spins=5, targetRotation=stopAngle+spins*2*Math.PI;
+
+  let start=null, duration=5000; spinning=true; spinBtn.disabled=true;
+  function animate(ts){
+    if(!start) start=ts;
+    const progress=(ts-start)/duration, eased=1-Math.pow(1-progress,3);
+    currentRotation=targetRotation*eased; drawWheel(currentRotation);
+    if(progress<1){ requestAnimationFrame(animate); }
+    else {
+      spinning=false; lastSpinTime=now; spinBtn.disabled=false;
+      const msg=getPrizeMessage(prize,firstName);
+      messageEl.textContent=msg; document.getElementById("submessage").textContent="";
+      saveHistory(firstName,lastName,prize);
+      confetti({particleCount:80, spread:70, origin:{y:0.6}});
+      showPrintCard(prize,msg);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+/******** FORM ********/
+spinBtn.addEventListener("click",()=>{
+  const firstName=document.getElementById("firstName").value.trim();
+  const lastName=document.getElementById("lastName").value.trim();
+  if(!firstName||!lastName){ alert("Preencha nome e sobrenome."); return; }
+  spinWheel(firstName,lastName);
+});
+
+/******** PRINT CARD ********/
+function showPrintCard(prize,msg){
+  const card=document.getElementById("printCard");
+  document.getElementById("printMessage").textContent=msg;
+  card.style.display="block";
+  document.getElementById("btnPrint").onclick=()=>window.print();
+  document.getElementById("btnClose").onclick=()=>card.style.display="none";
+  document.getElementById("closePrint").onclick=()=>card.style.display="none";
+}
+
+/******** INIT ********/
+loadHistory();
+</script>
+</body>
+</html>
