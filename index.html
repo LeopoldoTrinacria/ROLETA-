@@ -161,14 +161,23 @@
 <!-- Printable card -->
 <div class="print-card" id="printCard">
   <button class="close-print" id="closePrint">✕</button>
-  <h2 id="printTitle" class="success">Parabéns!</h2>
-  <p id="printMessage" style="font-size:19px;font-weight:800;margin-top:10px"></p>
-  <p id="printSmall" style="margin-top:10px;font-size:13px;color:#444">Mostre este print para resgatar seu prêmio/desconto.</p>
-  <div style="display:flex;gap:8px;margin-top:14px">
-    <button id="btnPrint" style="flex:1;padding:11px;border-radius:8px;border:none;background:#072029;color:#fff;font-weight:700">Imprimir / Salvar PDF</button>
-    <button id="btnClose" style="flex:1;padding:11px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#072029;font-weight:700">Fechar</button>
+  <h2 id="printTitle" class="success" style="font-size: 2em; margin: 0 0 10px 0; text-align:center;">🎊 Você Ganhou! 🎊</h2>
+  <div id="printMessage" style="font-size:1.3em;font-weight:700;margin:18px 0 8px 0; text-align:center;"></div>
+  <p id="printSmall" style="margin-top:8px;font-size:1.1em;color:#444;text-align:center;">
+    <span style="color:#eab308;font-weight:bold;">Apresente esta tela na loja para resgatar seu prêmio.</span><br>
+    <span style="color:#0ea5a4;">Compartilhe sua sorte no WhatsApp!</span>
+    <br>
+    <span style="color:#f43f5e;font-size:0.9em;">Siga nosso Instagram <a href="https://instagram.com/sualoja" target="_blank" style="color:#a78bfa;font-weight:bold;text-decoration:underline;">@sualoja</a> e marque seu prêmio!</span>
+  </p>
+  <div style="display:flex;gap:12px;margin-top:20px;justify-content:center;">
+    <button id="btnShare" style="flex:1;padding:13px 0;border-radius:8px;border:none;background:#25D366;color:#fff;font-weight:800;font-size:1.15em;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <span style="font-size:1.4em;">💬</span> Compartilhar no WhatsApp
+    </button>
+    <button id="btnClose" style="flex:1;padding:13px 0;border-radius:8px;border:1.5px solid #ccc;background:#fff;color:#072029;font-weight:800;font-size:1.15em;">Fechar</button>
   </div>
 </div>
+<!-- Som de vitória -->
+<audio id="audioWin" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfa4e6a.mp3"></audio>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
 /********* CONFIGURAÇÃO PERSONALIZÁVEL *********/
@@ -188,15 +197,32 @@ function randomWeight(weights){
   return weights.length-1;
 }
 function getPrizeMessage(prize, firstName){
-  if(prize==="Abridor") return `🎉 Parabéns, ${firstName}! Você ganhou um abridor exclusivo!`;
-  if(prize==="Misterioso") return `🎉 Parabéns, ${firstName}! Você ganhou um prêmio misterioso!`;
-  return `🎉 Parabéns, ${firstName}! Você ganhou ${prize}% de desconto!`;
+  if(prize==="Abridor") 
+    return `<span style="color:#0ea5a4;font-size:1.15em;">🍷 <b>${firstName}</b>, você ganhou um <b>abridor exclusivo</b>!</span><br><span style="font-size:1.1em;">Retire seu brinde na próxima compra de vinho.<br>🗝️🎁</span>`;
+  if(prize==="Misterioso") 
+    return `<span style="color:#a78bfa;font-size:1.15em;">🎊 <b>${firstName}</b>, você ganhou um <b>prêmio misterioso</b>!</span><br><span style="font-size:1.1em;">Venha descobrir qual é! 🎁❓</span>`;
+  return `<span style="color:#f43f5e;font-size:1.15em;">🥳 <b>${firstName}</b>, você ganhou <b>${prize}% de desconto</b>!</span><br><span style="font-size:1.1em;">Aproveite na sua próxima compra! 💸🍷</span>`;
+}
+function getShareMessage(prize, firstName) {
+  if(prize==="Abridor") 
+    return `${firstName} ganhou um ABRIDOR EXCLUSIVO na Roleta Trinacria na próxima compra de vinho! 🍷🎁 Tenta a sorte também!`;
+  if(prize==="Misterioso") 
+    return `${firstName} ganhou um PRÊMIO MISTERIOSO na Roleta Trinacria! 😱🎁 Tenta a sorte você também!`;
+  return `${firstName} ganhou ${prize}% de DESCONTO na Roleta Trinacria! 🎉 Aproveite você também!`;
 }
 function maskCell(cell){
   // Mascara (99) 9****-9999
   return cell.replace(/^(\d{2})(\d{1})\d{3}(\d{4})$/, (m, ddd, ini, fim)=>`(${ddd}) ${ini}****-${fim}`);
 }
-
+function disparaConfete() {
+  confetti({particleCount: 80, spread: 110, origin: { y: 0.7 }});
+  setTimeout(()=>confetti({particleCount: 60, spread: 180, origin: { y: 0.5 }}), 350);
+}
+function playWinSound() {
+  const audio = document.getElementById("audioWin");
+  audio.currentTime = 0;
+  audio.play();
+}
 /********* HISTÓRICO LOCAL *********/
 function loadHistory(){
   const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
@@ -209,7 +235,39 @@ function saveHistory(firstName,cell,prize){
   localStorage.setItem(LOCAL_KEY, JSON.stringify(hist));
   loadHistory();
 }
-
+/********* PRINT CARD *********/
+function showPrintCard(prize, msg, firstName){
+  const card=document.getElementById("printCard");
+  document.getElementById("printMessage").innerHTML=msg;
+  card.style.display="block";
+  playWinSound();
+  disparaConfete();
+  document.getElementById("btnShare").onclick = function() {
+    const shareMsg = encodeURIComponent(getShareMessage(prize, firstName));
+    const url = `https://wa.me/?text=${shareMsg}`;
+    window.open(url, "_blank");
+  };
+  document.getElementById("btnClose").onclick=()=>card.style.display="none";
+  document.getElementById("closePrint").onclick=()=>card.style.display="none";
+}
+/********* CONTADOR PRÓXIMO GIRO *********/
+function updateSpinCooldownTimer(targetTime, elemId) {
+  const elem = document.getElementById(elemId);
+  function update(){
+    const now = Date.now();
+    const delta = targetTime - now;
+    if(delta <= 0) {
+      elem.textContent = "Você já pode girar novamente!";
+      elem.style.color = "#0ea5a4";
+      return;
+    }
+    const h = Math.floor(delta/3600000), m = Math.floor((delta%3600000)/60000), s = Math.floor((delta%60000)/1000);
+    elem.textContent = `⏳ Próximo giro em: ${h}h ${m}m ${s}s`;
+    elem.style.color = "#eab308";
+    setTimeout(update, 1000);
+  }
+  update();
+}
 /********* ROLETA *********/
 const canvas=document.getElementById("wheel"), ctx=canvas.getContext("2d");
 let spinning=false, currentRotation=0;
@@ -226,7 +284,6 @@ function drawWheel(rotation=0){
   ctx.restore();
 }
 drawWheel();
-
 /********* CONTROLE DE FORMULÁRIO E VALIDAÇÃO *********/
 const spinBtn=document.getElementById("spinBtn"),
       messageEl=document.getElementById("message"),
@@ -238,6 +295,7 @@ form.addEventListener("submit", (e)=>{
   if(spinning) return;
   const firstName = document.getElementById("firstName").value.trim().replace(/\s+/g,' ');
   const cell = document.getElementById("cell").value.replace(/[^\d]/g,'');
+  const isAdmin = firstName.toLowerCase() === "admin admin";
   if(!firstName || firstName.length<2){
     showMsg("Nome inválido. Digite seu nome completo.", "error");
     return;
@@ -246,18 +304,19 @@ form.addEventListener("submit", (e)=>{
     showMsg("Celular inválido. Use formato (99) 99999-9999.", "error");
     return;
   }
-  // Checa cooldown do usuário
-  const lastSpin = getLastSpinForUser(cell);
-  const now = Date.now();
-  if(lastSpin && now - lastSpin.date < SPIN_COOLDOWN){
-    userNextSpin = lastSpin.date + SPIN_COOLDOWN;
-    showMsg("⏳ Você só pode girar a cada 7 dias com esse celular.", "error");
-    updateTimer();
-    return;
+  // Checa cooldown do usuário, exceto admin
+  if(!isAdmin){
+    const lastSpin = getLastSpinForUser(cell);
+    const now = Date.now();
+    if(lastSpin && now - lastSpin.date < SPIN_COOLDOWN){
+      userNextSpin = lastSpin.date + SPIN_COOLDOWN;
+      showMsg("⏳ Você só pode girar a cada 7 dias com esse celular.", "error");
+      updateSpinCooldownTimer(userNextSpin, "timer");
+      return;
+    }
   }
   spinWheel(firstName, cell);
 });
-
 /********* GIRO E ANIMAÇÃO *********/
 function spinWheel(firstName, cell){
   const prizeIndex = randomWeight(WEIGHTS), prize=SEGMENTS[prizeIndex];
@@ -276,25 +335,16 @@ function spinWheel(firstName, cell){
       showMsg(msg, "success");
       saveHistory(firstName, cell, prize);
       confetti({particleCount:90, spread:80, origin:{y:0.65}});
-      showPrintCard(prize, msg);
+      showPrintCard(prize, msg, firstName);
     }
   }
   requestAnimationFrame(animate);
 }
-
 /********* MENSAGENS E TIMER *********/
 let userNextSpin = 0;
 function showMsg(msg, type="info"){
-  messageEl.textContent = msg;
+  messageEl.innerHTML = msg;
   messageEl.className = "title " + (type==="error"?"error":"success");
-}
-function updateTimer(){
-  if(!userNextSpin) return timerEl.textContent="";
-  const now = Date.now(), delta = userNextSpin - now;
-  if(delta<=0){ timerEl.textContent=""; return;}
-  const h = Math.floor(delta/3600000), m = Math.floor((delta%3600000)/60000), s = Math.floor((delta%60000)/1000);
-  timerEl.textContent = `Próximo giro neste celular em: ${h}h ${m}m ${s}s`;
-  setTimeout(updateTimer, 1000);
 }
 function getLastSpinForUser(cell){
   const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
@@ -305,17 +355,6 @@ function getLastSpinForUser(cell){
   }
   return null;
 }
-
-/********* PRINT CARD *********/
-function showPrintCard(prize,msg){
-  const card=document.getElementById("printCard");
-  document.getElementById("printMessage").textContent=msg;
-  card.style.display="block";
-  document.getElementById("btnPrint").onclick=()=>window.print();
-  document.getElementById("btnClose").onclick=()=>card.style.display="none";
-  document.getElementById("closePrint").onclick=()=>card.style.display="none";
-}
-
 /********* HISTÓRICO E RANKING *********/
 function renderHistory(hist){
   const tbody = document.querySelector("#historyTable tbody");
@@ -351,7 +390,6 @@ function renderRanking(hist){
     ul.innerHTML += `<li>${texto}</li>`;
   });
 }
-
 /********* INICIALIZAÇÃO *********/
 window.addEventListener('DOMContentLoaded',()=>{
   loadHistory();
