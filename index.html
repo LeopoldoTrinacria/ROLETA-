@@ -1,153 +1,186 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roleta Trinacria PRO</title>
-<style>
-:root {
-  --bg-dark:#071127; --bg-light:#fff;
-  --text-dark:#fff; --text-light:#072029;
-  --accent:#eab308; --muted:#9aa8bf;
-}
-body {
-  margin:0; padding:0;
-  font-family:Arial, sans-serif;
-  background:var(--bg-dark); color:var(--text-dark);
-  transition:all 0.4s;
-}
-.wrap { max-width:960px; margin:0 auto; padding:14px; }
-.card { background:rgba(255,255,255,0.02); border-radius:12px; padding:14px; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-header h1 { margin:0; font-size:20px; }
-header p { margin:0; font-size:13px; color:var(--muted); }
-.main { display:flex; gap:14px; flex-wrap:wrap; }
-.left { flex:1; min-width:300px; }
-.right { width:360px; min-width:260px; }
-.wheel-wrap { position:relative; background:rgba(255,255,255,0.02); border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:center; }
-canvas#wheel { width:100%; height:auto; border-radius:10px; }
-.pointer { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:0; height:0;
-  border-left:18px solid transparent; border-right:18px solid transparent;
-  border-bottom:28px solid rgba(255,255,255,0.95);
-  filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));
-}
-form { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-input[type=text] {
-  flex:1; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);
-  background:transparent; color:var(--text-dark); font-size:16px; min-width:110px;
-}
-button {
-  padding:12px 16px; border-radius:10px; border:none;
-  background:var(--accent); color:#072029; font-weight:800; font-size:16px;
-  min-height:48px; cursor:pointer;
-}
-#spinBtn[disabled]{ opacity:0.6; pointer-events:none; }
-.result { margin-top:12px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.02); min-height:64px; }
-.result .title { font-weight:800; font-size:16px; }
-.small { font-size:13px; color:var(--muted); }
-
-/* Histórico */
-.history-box {
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  min-height: 320px;
-  display:flex; flex-direction:column;
-}
-.history-box h3 { margin:0 0 8px 0; font-size:16px; }
-.history { flex:1; margin-top:8px; overflow-y:auto; border-radius:8px; background:rgba(255,255,255,0.02); }
-.history table { width:100%; border-collapse:collapse; font-size:13px; }
-.history th, .history td { padding:6px 6px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.03); }
-.history td.highlight { font-weight:700; color:var(--accent); }
-.history::-webkit-scrollbar { width:6px; }
-.history::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:3px; }
-
-/* Print card */
-.print-card {
-  position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-  width:92%; max-width:420px; background:#fff; color:#072029;
-  border-radius:12px; padding:16px;
-  box-shadow:0 12px 40px rgba(0,0,0,0.6); z-index:9999; display:none;
-}
-.print-card h2 { margin:0 0 6px 0; font-size:18px; }
-.print-card p { margin:6px 0 0 0; }
-.close-print { background:transparent; border:none; font-weight:700; color:#999; position:absolute; right:10px; top:8px; }
-
-footer { margin-top:12px; color:var(--muted); font-size:13px; }
-
-@media (max-width:520px) {
-  .right { width:100%; }
-  .print-card { max-width:340px; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roleta Trinacria PRO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark:#071127; --bg-light:#fff;
+      --text-dark:#fff; --text-light:#072029;
+      --accent:#eab308; --muted:#9aa8bf;
+      --primary:#0ea5a4; --secondary:#f43f5e;
+    }
+    body {
+      margin:0; padding:0;
+      font-family:'Montserrat',Arial,sans-serif;
+      background:var(--bg-dark); color:var(--text-dark);
+      transition:all 0.4s;
+      min-height:100vh;
+    }
+    .wrap { max-width:1000px; margin:0 auto; padding:18px;}
+    .card { background:rgba(255,255,255,0.03); border-radius:14px; padding:18px; box-shadow:0 8px 26px rgba(0,0,0,0.7);}
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    header h1 { margin:0; font-size:28px; letter-spacing:1px; text-shadow:0 2px 8px #0002;}
+    header img {height:40px;}
+    header p { margin:0; font-size:14px; color:var(--muted);}
+    .main { display:flex; gap:18px; flex-wrap:wrap;}
+    .left { flex:1; min-width:320px;}
+    .right { width:380px; min-width:260px;}
+    .wheel-wrap { position:relative; background:rgba(255,255,255,0.04); border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:center;}
+    canvas#wheel { width:100%; max-width:340px; height:auto; border-radius:10px; box-shadow:0 2px 16px #0005;}
+    .pointer { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:0; height:0;
+      border-left:22px solid transparent; border-right:22px solid transparent;
+      border-bottom:36px solid rgba(255,255,255,0.97);
+      filter:drop-shadow(0 2px 8px rgba(0,0,0,0.7));
+    }
+    form { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:flex-end;}
+    label {font-size:13px; color:var(--muted); margin-bottom:2px;}
+    .form-group {display:flex; flex-direction:column; flex:1; min-width:110px;}
+    input[type=text], input[type=tel] {
+      padding:13px; border-radius:10px; border:1px solid rgba(255,255,255,0.11);
+      background:rgba(255,255,255,0.07); color:var(--text-dark); font-size:16px; outline:none;
+      transition: border .2s;
+    }
+    input[type=text]:focus, input[type=tel]:focus { border:1.5px solid var(--accent);}
+    button {
+      padding:13px 18px; border-radius:10px; border:none;
+      background:var(--accent); color:#072029; font-weight:800; font-size:16px;
+      min-height:48px; cursor:pointer; transition:background .2s;
+      box-shadow:0 2px 8px #0002;
+    }
+    button:active {background:var(--primary);}
+    #spinBtn[disabled]{ opacity:0.6; pointer-events:none; }
+    .result { margin-top:15px; padding:13px; border-radius:10px; background:rgba(255,255,255,0.04); min-height:64px;}
+    .result .title { font-weight:800; font-size:18px;}
+    .small { font-size:13px; color:var(--muted);}
+    .success {color:var(--primary);}
+    .error {color:var(--secondary);}
+    .timer {font-size:15px; color:var(--accent);}
+    /* Histórico */
+    .history-box {
+      padding: 13px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.06);
+      min-height: 340px;
+      display:flex; flex-direction:column;
+      box-shadow:0 2px 12px #0001;
+    }
+    .history-box h3 { margin:0 0 8px 0; font-size:18px;}
+    .history { flex:1; margin-top:8px; overflow-y:auto; border-radius:8px; background:rgba(255,255,255,0.02);}
+    .history table { width:100%; border-collapse:collapse; font-size:14px;}
+    .history th, .history td { padding:7px 6px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.04);}
+    .history td.highlight { font-weight:700; color:var(--accent);}
+    .history::-webkit-scrollbar { width:6px;}
+    .history::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.17); border-radius:3px;}
+    .ranking-box {margin-top:20px; background:rgba(255,255,255,0.04); border-radius:10px; padding:10px 8px;}
+    .ranking-box h4 {margin:0 0 7px 0; font-size:15px;}
+    .ranking-list {font-size:14px;}
+    /* Print card */
+    .print-card {
+      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:92%; max-width:420px; background:#fff; color:#072029;
+      border-radius:14px; padding:18px;
+      box-shadow:0 14px 40px rgba(0,0,0,0.7); z-index:9999; display:none;
+    }
+    .print-card h2 { margin:0 0 6px 0; font-size:18px;}
+    .print-card p { margin:6px 0 0 0;}
+    .close-print { background:transparent; border:none; font-weight:700; color:#999; position:absolute; right:12px; top:10px; font-size:17px;}
+    footer { margin-top:14px; color:var(--muted); font-size:14px;}
+    @media (max-width:600px) {
+      .right { width:100%;}
+      .main {flex-direction:column;}
+      .print-card { max-width:340px;}
+    }
+  </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
     <header>
-      <div>
-        <h1>Roleta Trinacria PRO</h1>
-        <p class="small">1 giro por semana • Histórico local • Ranking básico</p>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/471/471664.png" alt="Logo" />
+        <div>
+          <h1>Roleta Trinacria PRO</h1>
+          <p class="small">1 giro por semana • Histórico local • Ranking • Visual novo</p>
+        </div>
       </div>
     </header>
     <div class="main">
       <div class="left">
         <div class="wheel-wrap" aria-hidden="true">
-          <div class="pointer"></div>
-          <canvas id="wheel" width="520" height="520" aria-label="Roleta de prêmios"></canvas>
+          <div class="pointer" title="É aqui que a roleta para!"></div>
+          <canvas id="wheel" width="340" height="340" aria-label="Roleta de prêmios"></canvas>
         </div>
-        <form id="playerForm" onsubmit="return false">
-          <input id="firstName" type="text" placeholder="Nome" required />
-          <input id="lastName" type="text" placeholder="Sobrenome" required />
-          <button id="spinBtn" type="button">GIRAR</button>
+        <form id="playerForm" autocomplete="off">
+          <div class="form-group">
+            <label for="firstName">Nome</label>
+            <input id="firstName" type="text" placeholder="Nome" required maxlength="20" pattern="[A-Za-zÀ-ÿ\s]+" aria-label="Nome" />
+          </div>
+          <div class="form-group">
+            <label for="cell">Celular</label>
+            <input id="cell" type="tel" placeholder="(99) 99999-9999" required maxlength="16" pattern="^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$" aria-label="Celular"/>
+          </div>
+          <button id="spinBtn" type="submit">GIRAR</button>
         </form>
         <div class="result" id="resultBox">
-          <div id="message" class="title">Bem-vindo! Preencha seu nome e gire a roleta.</div>
+          <div id="message" class="title">Preencha seu nome e celular para girar a roleta.</div>
           <div id="submessage" class="small">Se ganhar, aparecerá um cartão imprimível.</div>
+          <div id="timer" class="timer"></div>
         </div>
       </div>
       <div class="right">
         <div class="history-box">
           <h3>Histórico</h3>
           <div class="small">Últimos giros salvos no dispositivo</div>
-          <div class="history" id="historyList">
+          <div class="history" id="historyList" style="margin-bottom:10px;">
             <table id="historyTable" style="display:none">
-              <thead><tr><th>Nome</th><th>Prêmio</th><th>Data/Hora</th></tr></thead>
+              <thead><tr><th>Nome</th><th>Celular</th><th>Prêmio</th><th>Data/Hora</th></tr></thead>
               <tbody></tbody>
             </table>
             <div id="historyPlaceholder" class="small" style="text-align:center; padding:20px;">
               📜 Nenhum histórico ainda
             </div>
           </div>
+          <div class="ranking-box">
+            <h4>Top Prêmios Recentes</h4>
+            <ul class="ranking-list" id="rankingList"></ul>
+          </div>
         </div>
       </div>
     </div>
-    <footer><div class="small">Otimize cores, textos e prêmios conforme desejar.</div></footer>
+    <footer>
+      <div class="small">
+        Visual moderno, ranking, validação e muito mais. 
+        <br>Personalize prêmios, cores e textos em <b>index.html</b> conforme quiser.
+      </div>
+    </footer>
   </div>
 </div>
-
 <!-- Printable card -->
 <div class="print-card" id="printCard">
   <button class="close-print" id="closePrint">✕</button>
-  <h2 id="printTitle">Parabéns!</h2>
-  <p id="printMessage" style="font-size:18px;font-weight:800;margin-top:8px"></p>
+  <h2 id="printTitle" class="success">Parabéns!</h2>
+  <p id="printMessage" style="font-size:19px;font-weight:800;margin-top:10px"></p>
   <p id="printSmall" style="margin-top:10px;font-size:13px;color:#444">Mostre este print para resgatar seu prêmio/desconto.</p>
-  <div style="display:flex;gap:8px;margin-top:12px">
-    <button id="btnPrint" style="flex:1;padding:10px;border-radius:8px;border:none;background:#072029;color:#fff;font-weight:700">Imprimir / Salvar PDF</button>
-    <button id="btnClose" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#072029;font-weight:700">Fechar</button>
+  <div style="display:flex;gap:8px;margin-top:14px">
+    <button id="btnPrint" style="flex:1;padding:11px;border-radius:8px;border:none;background:#072029;color:#fff;font-weight:700">Imprimir / Salvar PDF</button>
+    <button id="btnClose" style="flex:1;padding:11px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#072029;font-weight:700">Fechar</button>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
-/******** CONFIG ********/
+/********* CONFIGURAÇÃO PERSONALIZÁVEL *********/
 const SEGMENTS = [5,7,10,12,15,20,"Abridor","Misterioso"];
 const WEIGHTS  = [40,25,15,10,7,3,15,3];
 const COLORS   = ['#0ea5a4','#34d399','#60a5fa','#f97316','#f43f5e','#a78bfa','#facc15','#ff6f61'];
 const LOCAL_KEY = "trinacria_wheel_pro";
 const SPIN_COOLDOWN = 7*24*60*60*1000; // 7 dias
+const MAX_HISTORY = 50; // máximo exibido no histórico e ranking
 
-/******** FUNÇÕES UTIL ********/
+/********* FUNÇÕES AUXILIARES *********/
+// Sorteio ponderado dos prêmios
 function randomWeight(weights){
   const total = weights.reduce((a,b)=>a+b,0);
   let rand = Math.random()*total;
@@ -159,37 +192,27 @@ function getPrizeMessage(prize, firstName){
   if(prize==="Misterioso") return `🎉 Parabéns, ${firstName}! Você ganhou um prêmio misterioso!`;
   return `🎉 Parabéns, ${firstName}! Você ganhou ${prize}% de desconto!`;
 }
+function maskCell(cell){
+  // Mascara (99) 9****-9999
+  return cell.replace(/^(\d{2})(\d{1})\d{3}(\d{4})$/, (m, ddd, ini, fim)=>`(${ddd}) ${ini}****-${fim}`);
+}
 
-/******** HISTÓRICO ********/
+/********* HISTÓRICO LOCAL *********/
 function loadHistory(){
   const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
-  const tbody = document.querySelector("#historyTable tbody");
-  const table = document.getElementById("historyTable");
-  const placeholder = document.getElementById("historyPlaceholder");
-  tbody.innerHTML="";
-  if(hist.length===0){
-    placeholder.style.display="block"; table.style.display="none";
-  } else {
-    placeholder.style.display="none"; table.style.display="table";
-    hist.slice(-20).reverse().forEach(e=>{
-      const tr=document.createElement("tr");
-      const prizeCell = `<td class="${(e.prize=="20"||e.prize=="Abridor")?"highlight":""}">${e.prize}</td>`;
-      tr.innerHTML = `<td>${e.firstName} ${e.lastName}</td>${prizeCell}<td>${new Date(e.date).toLocaleString([], {dateStyle:"short", timeStyle:"short"})}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
+  renderHistory(hist);
+  renderRanking(hist);
 }
-function saveHistory(firstName,lastName,prize){
+function saveHistory(firstName,cell,prize){
   const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
-  hist.push({firstName,lastName,prize,date:Date.now()});
+  hist.push({firstName,cell:maskCell(cell),prize,date:Date.now()});
   localStorage.setItem(LOCAL_KEY, JSON.stringify(hist));
   loadHistory();
 }
 
-/******** ROLETA ********/
+/********* ROLETA *********/
 const canvas=document.getElementById("wheel"), ctx=canvas.getContext("2d");
-const spinBtn=document.getElementById("spinBtn"), messageEl=document.getElementById("message");
-let spinning=false, currentRotation=0, lastSpinTime=0;
+let spinning=false, currentRotation=0;
 
 function drawWheel(rotation=0){
   const w=canvas.width, h=canvas.height, cx=w/2, cy=h/2, seg=SEGMENTS.length, angle=2*Math.PI/seg;
@@ -197,51 +220,93 @@ function drawWheel(rotation=0){
   for(let i=0;i<seg;i++){
     ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,w/2,i*angle,(i+1)*angle); ctx.closePath();
     ctx.fillStyle=COLORS[i%COLORS.length]; ctx.fill();
-    ctx.save(); ctx.rotate((i+0.5)*angle); ctx.textAlign="right"; ctx.fillStyle="#021124"; ctx.font="bold 20px Arial";
-    ctx.fillText(SEGMENTS[i], w/2-20, 8); ctx.restore();
+    ctx.save(); ctx.rotate((i+0.5)*angle); ctx.textAlign="right"; ctx.fillStyle="#021124"; ctx.font="bold 22px Montserrat,Arial";
+    ctx.fillText(SEGMENTS[i], w/2-22, 12); ctx.restore();
   }
   ctx.restore();
 }
 drawWheel();
 
-/******** ANIMAÇÃO DO GIRO ********/
-function spinWheel(firstName,lastName){
-  if(spinning) return;
-  const now=Date.now();
-  if(now-lastSpinTime<SPIN_COOLDOWN){ alert("⏳ Você só pode girar a cada 7 dias!"); return; }
+/********* CONTROLE DE FORMULÁRIO E VALIDAÇÃO *********/
+const spinBtn=document.getElementById("spinBtn"),
+      messageEl=document.getElementById("message"),
+      timerEl=document.getElementById("timer"),
+      form=document.getElementById("playerForm");
 
+form.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  if(spinning) return;
+  const firstName = document.getElementById("firstName").value.trim().replace(/\s+/g,' ');
+  const cell = document.getElementById("cell").value.replace(/[^\d]/g,'');
+  if(!firstName || firstName.length<2){
+    showMsg("Nome inválido. Digite seu nome completo.", "error");
+    return;
+  }
+  if(!/^\d{10,11}$/.test(cell)){
+    showMsg("Celular inválido. Use formato (99) 99999-9999.", "error");
+    return;
+  }
+  // Checa cooldown do usuário
+  const lastSpin = getLastSpinForUser(cell);
+  const now = Date.now();
+  if(lastSpin && now - lastSpin.date < SPIN_COOLDOWN){
+    userNextSpin = lastSpin.date + SPIN_COOLDOWN;
+    showMsg("⏳ Você só pode girar a cada 7 dias com esse celular.", "error");
+    updateTimer();
+    return;
+  }
+  spinWheel(firstName, cell);
+});
+
+/********* GIRO E ANIMAÇÃO *********/
+function spinWheel(firstName, cell){
   const prizeIndex = randomWeight(WEIGHTS), prize=SEGMENTS[prizeIndex];
   const segAngle=(2*Math.PI)/SEGMENTS.length;
   const stopAngle=(SEGMENTS.length-prizeIndex)*segAngle-segAngle/2;
   const spins=5, targetRotation=stopAngle+spins*2*Math.PI;
-
-  let start=null, duration=5000; spinning=true; spinBtn.disabled=true;
+  let start=null, duration=4800; spinning=true; spinBtn.disabled=true;
   function animate(ts){
     if(!start) start=ts;
     const progress=(ts-start)/duration, eased=1-Math.pow(1-progress,3);
     currentRotation=targetRotation*eased; drawWheel(currentRotation);
-    if(progress<1){ requestAnimationFrame(animate); }
+    if(progress<1){ requestAnimationFrame(animate);}
     else {
-      spinning=false; lastSpinTime=now; spinBtn.disabled=false;
+      spinning=false; spinBtn.disabled=false;
       const msg=getPrizeMessage(prize,firstName);
-      messageEl.textContent=msg; document.getElementById("submessage").textContent="";
-      saveHistory(firstName,lastName,prize);
-      confetti({particleCount:80, spread:70, origin:{y:0.6}});
-      showPrintCard(prize,msg);
+      showMsg(msg, "success");
+      saveHistory(firstName, cell, prize);
+      confetti({particleCount:90, spread:80, origin:{y:0.65}});
+      showPrintCard(prize, msg);
     }
   }
   requestAnimationFrame(animate);
 }
 
-/******** FORM ********/
-spinBtn.addEventListener("click",()=>{
-  const firstName=document.getElementById("firstName").value.trim();
-  const lastName=document.getElementById("lastName").value.trim();
-  if(!firstName||!lastName){ alert("Preencha nome e sobrenome."); return; }
-  spinWheel(firstName,lastName);
-});
+/********* MENSAGENS E TIMER *********/
+let userNextSpin = 0;
+function showMsg(msg, type="info"){
+  messageEl.textContent = msg;
+  messageEl.className = "title " + (type==="error"?"error":"success");
+}
+function updateTimer(){
+  if(!userNextSpin) return timerEl.textContent="";
+  const now = Date.now(), delta = userNextSpin - now;
+  if(delta<=0){ timerEl.textContent=""; return;}
+  const h = Math.floor(delta/3600000), m = Math.floor((delta%3600000)/60000), s = Math.floor((delta%60000)/1000);
+  timerEl.textContent = `Próximo giro neste celular em: ${h}h ${m}m ${s}s`;
+  setTimeout(updateTimer, 1000);
+}
+function getLastSpinForUser(cell){
+  const hist = JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]");
+  const masked = maskCell(cell);
+  // Busca último giro desse celular (mascarado)
+  for(let i=hist.length-1;i>=0;i--){
+    if(hist[i].cell===masked) return hist[i];
+  }
+  return null;
+}
 
-/******** PRINT CARD ********/
+/********* PRINT CARD *********/
 function showPrintCard(prize,msg){
   const card=document.getElementById("printCard");
   document.getElementById("printMessage").textContent=msg;
@@ -251,8 +316,47 @@ function showPrintCard(prize,msg){
   document.getElementById("closePrint").onclick=()=>card.style.display="none";
 }
 
-/******** INIT ********/
-loadHistory();
+/********* HISTÓRICO E RANKING *********/
+function renderHistory(hist){
+  const tbody = document.querySelector("#historyTable tbody");
+  const table = document.getElementById("historyTable");
+  const placeholder = document.getElementById("historyPlaceholder");
+  tbody.innerHTML="";
+  if(!hist.length){
+    placeholder.style.display="block"; table.style.display="none";
+  } else {
+    placeholder.style.display="none"; table.style.display="table";
+    hist.slice(-MAX_HISTORY).reverse().forEach(e=>{
+      const tr=document.createElement("tr");
+      const prizeCell = `<td class="${(e.prize=="20"||e.prize=="Abridor")?"highlight":""}">${e.prize}</td>`;
+      tr.innerHTML = `<td>${e.firstName}</td><td>${e.cell}</td>${prizeCell}<td>${new Date(e.date).toLocaleString([], {dateStyle:"short", timeStyle:"short"})}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+}
+function renderRanking(hist){
+  // Mostra top 5 giros com melhores prêmios, mais recentes
+  const order = [...hist].sort((a,b)=>{
+    // Prêmio numérico > prêmio especial, mais recente primeiro
+    const aval = isNaN(parseInt(a.prize)) ? 0 : parseInt(a.prize);
+    const bval = isNaN(parseInt(b.prize)) ? 0 : parseInt(b.prize);
+    return (bval-aval)||(b.date-a.date);
+  });
+  const top = order.slice(0,5);
+  const ul = document.getElementById("rankingList");
+  ul.innerHTML="";
+  if(!top.length){ ul.innerHTML="<li class='small'>Sem prêmios no ranking ainda</li>"; return; }
+  top.forEach(e=>{
+    let texto = `${e.firstName} (${e.cell}): <b>${e.prize}</b> - ${new Date(e.date).toLocaleDateString()}`;
+    ul.innerHTML += `<li>${texto}</li>`;
+  });
+}
+
+/********* INICIALIZAÇÃO *********/
+window.addEventListener('DOMContentLoaded',()=>{
+  loadHistory();
+  setInterval(loadHistory, 15000); // Atualiza histórico a cada 15s
+});
 </script>
 </body>
 </html>
